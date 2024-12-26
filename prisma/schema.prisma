@@ -25,6 +25,8 @@ model Movie {
   favoriteListId BigInt
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
+
+  @@unique([title, favoriteListId])
 }
 
 model FavoriteList {
