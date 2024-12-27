@@ -11,7 +11,7 @@ export class MovieController {
   @UseGuards(AuthGuard)
   @HttpCode(200)
   search(@Query('s') s: string, @Query('page') page: number) {
-    return this.movieService.search(s, page = 1);
+    return this.movieService.search(s, page ?? 1);
   }
 
   @Post('favorites')
@@ -25,7 +25,7 @@ export class MovieController {
   @UseGuards(AuthGuard)
   @HttpCode(200)
   getFavorites(@Req() req: any, @Query('page') page: number) {
-    return this.movieService.getFavorites(req.body.user, page = 1);
+    return this.movieService.getFavorites(req.body.user, page ?? 1);
   }
 
   @Put('favorites/:id')

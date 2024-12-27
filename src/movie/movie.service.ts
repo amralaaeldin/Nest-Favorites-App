@@ -17,10 +17,25 @@ export class MovieService {
 
   async search(searchQuery: string, page: number): Promise<any> {
     try {
-      const results = await axios.get(`http://www.omdbapi.com/?apikey=${process.env.OMDB_API_KEY}&s=${searchQuery}&page=${page}`);
+      let results = { data: null };
 
-      if (results.data?.Response === 'False') {
-        throw new NotFoundException(results.data.Error);
+      const cacheKey = `searchQuery:${searchQuery}-page:${page}`;
+
+      results.data = JSON.parse(await this.redis.get(cacheKey));
+
+      if (!results.data) {
+        results = await axios.get(`http://www.omdbapi.com/?apikey=${process.env.OMDB_API_KEY}&s=${searchQuery}&page=${page}`);
+
+        if (results.data?.Response === 'False') {
+          throw new NotFoundException(results.data.Error);
+        }
+
+        await this.redis.set(
+          cacheKey,
+          JSON.stringify(results.data),
+          'EX',
+          1 * 24 * 60 * 60, // 1 day
+        );
       }
 
       const totalPages = Math.ceil(results.data.totalResults / results.data.Search.length);
@@ -28,6 +43,8 @@ export class MovieService {
         data: results.data.Search,
         page,
         totalPages: totalPages ? totalPages : 1,
+        nextPage: page < totalPages ? page + 1 : null,
+        previousPage: page > 1 ? page - 1 : null,
       };
     } catch (error) {
       if (error instanceof NotFoundException) {
@@ -51,7 +68,13 @@ export class MovieService {
     }
   }
 
-  async getFavorites(user: JWTPayloadDto, page: number): Promise<{ data: Movie[], page: number, totalPages: number }> {
+  async getFavorites(user: JWTPayloadDto, page: number): Promise<{
+    data: Movie[],
+    page: number,
+    totalPages: number,
+    nextPage: number,
+    previousPage: number
+  }> {
     try {
       const favorites = await this.prisma.movie.findMany({
         where: {
@@ -72,6 +95,8 @@ export class MovieService {
         data: favorites,
         page,
         totalPages: totalPages ? totalPages : 1,
+        nextPage: page < totalPages ? page + 1 : null,
+        previousPage: page > 1 ? page - 1 : null,
       }
     } catch (error) {
       throw new InternalServerErrorException('An error occurred while retrieving the favorite movies.');
