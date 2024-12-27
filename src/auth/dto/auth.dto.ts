@@ -30,6 +30,7 @@ export class LoginResponseDto {
 }
 
 export class JWTPayloadDto {
-  id: string;
+  id: bigint;
   email: string;
+  favoriteListId: bigint;
 }

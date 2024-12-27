@@ -9,8 +9,8 @@ import * as bcrypt from 'bcryptjs';
 @Injectable()
 export class AuthService {
   constructor(
-    private userService: UserService,
-    private jwtService: JwtService,
+    private readonly userService: UserService,
+    private readonly jwtService: JwtService,
     @InjectRedis() private readonly redis: Redis,
   ) { }
 
@@ -68,7 +68,9 @@ export class AuthService {
       throw new UnauthorizedException();
     }
 
-    const payload = { id: `${user.id}`, email: user.email };
+    const userFavoriteList = await this.userService.findUserFavoriteList(user.id);
+
+    const payload = { id: user.id, email: user.email, favoriteListId: userFavoriteList.id };
 
     const issuedAt = new Date().getTime();
     const accessToken = await this.jwtService.signAsync(payload, { expiresIn: '1m', secret: process.env.JWT_SECRET })
@@ -94,7 +96,7 @@ export class AuthService {
     const decoded = await this.validateRefreshToken(RefreshTokenDto.refresh_token);
 
     const newAccessToken = await this.jwtService.signAsync(
-      { id: decoded.id, email: decoded.email },
+      { id: decoded.id, email: decoded.email, favoriteListId: decoded.favoriteListId },
       { expiresIn: '15m', secret: process.env.JWT_SECRET },
     );
 

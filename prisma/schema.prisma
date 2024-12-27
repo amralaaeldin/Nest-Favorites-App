@@ -18,15 +18,15 @@ model User {
 
 model Movie {
   id             BigInt       @id @default(autoincrement())
-  title          String
-  description    String
+  title          String       @unique @db.VarChar(255)
+  description    String?      @db.Text()
   year           Int
   list           FavoriteList @relation(fields: [favoriteListId], references: [id])
   favoriteListId BigInt
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
-  @@unique([title, favoriteListId])
+  @@unique([id, favoriteListId])
 }
 
 model FavoriteList {
