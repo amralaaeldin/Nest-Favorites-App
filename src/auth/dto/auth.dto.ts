@@ -25,8 +25,8 @@ export class RefreshTokenDto {
 }
 
 export class LoginResponseDto {
-  refresh_token: string;
-  access_token: string;
+  refreshToken: string;
+  accessToken: string;
 }
 
 export class JWTPayloadDto {

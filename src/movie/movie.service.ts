@@ -30,6 +30,16 @@ export class MovieService {
           throw new NotFoundException(results.data.Error);
         }
 
+        const mappedData = results.data.Search.map(item => ({
+          title: item.Title,
+          image: item.Poster,
+          year: item.Year,
+          id: item.imdbID,
+          type: item.Type
+        }));
+
+        results.data.Search = mappedData;
+
         await this.redis.set(
           cacheKey,
           JSON.stringify(results.data),
@@ -42,6 +52,7 @@ export class MovieService {
       return {
         data: results.data.Search,
         page,
+        size: results.data.Search.length,
         totalPages: totalPages ? totalPages : 1,
         nextPage: page < totalPages ? page + 1 : null,
         previousPage: page > 1 ? page - 1 : null,
@@ -71,6 +82,7 @@ export class MovieService {
   async getFavorites(user: JWTPayloadDto, page: number): Promise<{
     data: Movie[],
     page: number,
+    size: number,
     totalPages: number,
     nextPage: number,
     previousPage: number
@@ -94,6 +106,7 @@ export class MovieService {
       return {
         data: favorites,
         page,
+        size: favorites.length,
         totalPages: totalPages ? totalPages : 1,
         nextPage: page < totalPages ? page + 1 : null,
         previousPage: page > 1 ? page - 1 : null,
