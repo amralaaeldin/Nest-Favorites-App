@@ -12,6 +12,10 @@ export class CreateFavoriteMovieDto {
   @IsNotEmpty()
   @IsPositive()
   year: number;
+
+  @IsOptional()
+  @IsString()
+  image: string;
 }
 
 export class UpdateFavoriteMovieDto {

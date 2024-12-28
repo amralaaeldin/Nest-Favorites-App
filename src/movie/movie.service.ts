@@ -15,6 +15,18 @@ export class MovieService {
     @InjectRedis() private readonly redis: Redis,
   ) { }
 
+  async getMovieByTitle(title: string, favoriteListId: bigint): Promise<any> {
+    const movie = await this.prisma.movie.findUnique({
+      where: {
+        title_favoriteListId: {
+          title,
+          favoriteListId,
+        },
+      }
+    })
+    return movie;
+  }
+
   async search(searchQuery: string, page: number): Promise<any> {
     try {
       let results = { data: null };
@@ -48,7 +60,9 @@ export class MovieService {
         );
       }
 
-      const totalPages = Math.ceil(results.data.totalResults / results.data.Search.length);
+      const pageSize = 10; // based on the API response
+
+      const totalPages = Math.ceil(results.data.totalResults / pageSize);
       return {
         data: results.data.Search,
         page,
@@ -66,7 +80,14 @@ export class MovieService {
     }
   }
 
-  async createFavorite(createFavoriteMovieDto: CreateFavoriteMovieDto, user: JWTPayloadDto): Promise<Movie> {
+  async createFavorite(createFavoriteMovieDto: CreateFavoriteMovieDto, user: JWTPayloadDto): Promise<Movie | { message: string }> {
+    const alreadyExists = await this.getMovieByTitle(createFavoriteMovieDto.title, user.favoriteListId);
+    if (alreadyExists) {
+      return {
+        message: 'Movie already exists in favorites',
+      }
+    }
+
     try {
       return await this.prisma.movie.create({
         data: {
@@ -134,7 +155,7 @@ export class MovieService {
         message: 'Movie updated successfully',
       }
     } catch (error) {
-      if (error.meta.cause.includes('not found')) {
+      if (error.meta?.cause.includes('not found')) {
         throw new NotFoundException(`Movie with id ${id} not found`);
       } else {
         throw new InternalServerErrorException('An error occurred while updating the favorite movie.');
@@ -157,7 +178,7 @@ export class MovieService {
         message: 'Movie deleted successfully',
       }
     } catch (error) {
-      if (error.meta.cause.includes('not exist')) {
+      if (error.meta?.cause.includes('not exist')) {
         throw new NotFoundException(`Movie with id ${id} not found`);
       } else {
         throw new InternalServerErrorException('An error occurred while deleting the favorite movie.');

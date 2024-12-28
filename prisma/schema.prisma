@@ -21,12 +21,14 @@ model Movie {
   title          String       @unique @db.VarChar(255)
   description    String?      @db.Text()
   year           Int
+  image          String?      @db.VarChar(255)
   list           FavoriteList @relation(fields: [favoriteListId], references: [id])
   favoriteListId BigInt
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
   @@unique([id, favoriteListId])
+  @@unique([title, favoriteListId])
 }
 
 model FavoriteList {

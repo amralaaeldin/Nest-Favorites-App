@@ -73,7 +73,7 @@ export class AuthService {
     const payload = { id: user.id, email: user.email, favoriteListId: userFavoriteList.id };
 
     const issuedAt = new Date().getTime();
-    const accessToken = await this.jwtService.signAsync(payload, { expiresIn: '1m', secret: process.env.JWT_SECRET })
+    const accessToken = await this.jwtService.signAsync(payload, { expiresIn: '15m', secret: process.env.JWT_SECRET })
     const refreshToken = await this.jwtService.signAsync({
       ...payload,
       issuedAt
