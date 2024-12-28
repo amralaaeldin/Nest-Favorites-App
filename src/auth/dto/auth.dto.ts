@@ -21,7 +21,7 @@ export class LoginDto {
 
 export class RefreshTokenDto {
   @IsNotEmpty()
-  refresh_token: string;
+  refreshToken: string;
 }
 
 export class LoginResponseDto {

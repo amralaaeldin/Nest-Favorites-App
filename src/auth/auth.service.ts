@@ -93,7 +93,7 @@ export class AuthService {
   }
 
   async refreshToken(RefreshTokenDto: RefreshTokenDto) {
-    const decoded = await this.validateRefreshToken(RefreshTokenDto.refresh_token);
+    const decoded = await this.validateRefreshToken(RefreshTokenDto.refreshToken);
 
     const newAccessToken = await this.jwtService.signAsync(
       { id: decoded.id, email: decoded.email, favoriteListId: decoded.favoriteListId },
@@ -104,7 +104,7 @@ export class AuthService {
   }
 
   async revokeRefreshToken(RefreshTokenDto: RefreshTokenDto) {
-    const decoded = await this.validateRefreshToken(RefreshTokenDto.refresh_token);
+    const decoded = await this.validateRefreshToken(RefreshTokenDto.refreshToken);
     const redisKey = `refresh:${decoded.id}:${decoded.email}:${decoded.issuedAt}`;
     await this.redis.del(redisKey);
 
@@ -112,7 +112,7 @@ export class AuthService {
   }
 
   async revokeAllRefreshTokensForUser(RefreshTokenDto: RefreshTokenDto) {
-    const decoded = await this.validateRefreshToken(RefreshTokenDto.refresh_token);
+    const decoded = await this.validateRefreshToken(RefreshTokenDto.refreshToken);
     const keys = await this.redis.keys(`refresh:${decoded.id}:${decoded.email}:*`);
     if (keys.length > 0) {
       await this.redis.del(...keys);
