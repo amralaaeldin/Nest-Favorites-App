@@ -9,7 +9,7 @@ import { MovieModule } from './movie/movie.module';
   imports: [
     RedisModule.forRoot({
       type: 'single',
-      url: process.env.REDIS_URL,
+      url: process.env.REDIS_URI,
     }),
     AuthModule,
     MovieModule,
